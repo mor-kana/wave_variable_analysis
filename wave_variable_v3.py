@@ -49,11 +49,6 @@ def setGridPrefered(ax):
     ax.yaxis.set_minor_locator(ticker.AutoMinorLocator(5))
     ax.grid(which='minor', lw=0.4) # 補助目盛の描画
 
-
-
-
-
-
 # まず基本入出力値を計算
 for i in range(num_point):
     delta_m_value[i] = delta_m(t[i])
