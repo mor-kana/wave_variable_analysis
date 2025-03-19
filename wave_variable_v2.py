@@ -2,12 +2,12 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 # パラメータ設定
-num_point = 500  # 100点に増やす
+num_point = 100  # 100点に増やす
 cycle = 1
-point_maxtime = 50
+point_maxtime = 30
 operator_input = 1
 robot_output = 0
-b = 100
+b = 1
 c = 1
 # 時間配列の生成
 t = np.linspace(-2 * cycle, point_maxtime, num_point)  # より多くの点で曲線を滑らかに
@@ -62,6 +62,7 @@ for i in range(num_point):
             # 初期条件 (t < 2)
             omega_m_value[i] = b * delta_m_value[i] + omega_s_value[idx_minus_1]
         
+        
         # um の計算
         um_value[i] = (b * delta_m_value[i] + omega_m_value[i]) / np.sqrt(2 * b)
         
@@ -71,8 +72,8 @@ for i in range(num_point):
         
         # delta_s の計算
         #delta_s_value[i] = np.sqrt(2/b) * us_value[i] - omega_s_value[i]/b
+        omega_s_value[i] = delta_s_value[i - 1]
         delta_s_value[i] = delta_m_value[idx_minus_1] + c * (omega_m_value[idx_minus_1]-omega_s_value[i])/b
-        omega_s_value[i] = delta_s_value[idx_minus_1]
         
         # vs の計算
         vs_value[i] = (b * delta_s_value[i] - omega_s_value[i]) / np.sqrt(2 * b)
@@ -109,6 +110,7 @@ ax8.plot(t, omega_s_value, color=c5, label=l5)
 # 凡例の追加
 for ax in [ax1, ax2, ax3, ax4, ax5, ax6, ax7, ax8]:
     ax.legend(loc='upper right')
+    ax.set_ylim(-3,3)
 
 # レイアウト設定とプロット表示
 fig.tight_layout()

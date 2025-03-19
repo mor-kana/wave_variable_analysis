@@ -2,10 +2,10 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 # パラメータ設定
-num_point = 61  # 100点に増やす
+num_point = 201  # 100点に増やす
 cycle = 1
-point_maxtime = 10
-operator_input = 1
+point_maxtime = 18
+operator_input = 1 
 robot_output = 0
 b = 1
 c = 1
@@ -22,12 +22,32 @@ us_value = np.zeros_like(t, dtype=float)
 vm_value = np.zeros_like(t, dtype=float)
 vs_value = np.zeros_like(t, dtype=float)
 
+#vs_value = np.full_like(t,np.sqrt(1/2))
 # 基本関数の定義
 def delta_m(t_value):
     return 0 if t_value < 0 else operator_input
 
 def omega_s(t_value):
     return 0 if t_value < 0 else robot_output
+
+
+def setGridPrefered(ax):
+    """
+    好みのグリッドを設定するための関数
+
+    Parameters
+    ----------
+    ax : matplotlibの軸オブジェクト
+
+    """
+    
+    import matplotlib.ticker as ticker
+    ax.grid(which='major', lw=0.7) # 主目盛の描画(標準)
+    
+    # X,Y軸に対して、(補助目盛)×5 = (主目盛)
+    ax.xaxis.set_minor_locator(ticker.AutoMinorLocator(5))
+    ax.yaxis.set_minor_locator(ticker.AutoMinorLocator(5))
+    ax.grid(which='minor', lw=0.4) # 補助目盛の描画
 
 # まず基本入出力値を計算
 for i in range(num_point):
@@ -41,7 +61,7 @@ def get_index_from_time(t_array, t_value):
 # 再帰的な関数の計算
 for i in range(num_point):
     current_time = t[i]
-    
+
     # インデックスではなく時間による参照
     if current_time >= 0:
         # t-2と t-1の時間値
@@ -67,9 +87,14 @@ for i in range(num_point):
         # vm の計算（時間シフト）
         # if current_time >= 1:
         vm_value[i] = vs_value[idx_minus_1]
-        
+        omega_m_value[i] = b * delta_m_value[i-1] - np.sqrt(2*b) * vm_value[i]
+
+        if(delta_m_value[idx_minus_2] == 1):
+            delta_m_value[i] = 0
+        else:
+            delta_m_value[i] = 1
+            
         # print(delta_m_value[i], vm_value[i])
-        omega_m_value[i] = b * delta_m_value[i] - np.sqrt(2*b) * vm_value[i]
         # um の計算
         um_value[i] = (b * delta_m_value[i] + omega_m_value[i]) / np.sqrt(2 * b)
         
@@ -79,9 +104,9 @@ for i in range(num_point):
         
         # delta_s の計算
         rng = np.random.default_rng()
-        omega_s_value[i] = delta_s_value[i-1] * (1 + rng.random() * 0.01)
-        delta_s_value[i] = np.sqrt(2/b) * us_value[i] - omega_s_value[i]/b
-        # print(delta_s_value[i])
+        delta_s_value[i] = np.sqrt(2/b) * us_value[i] - omega_s_value[i-1]/b
+        omega_s_value[i] = delta_s_value[i] #* (1 + rng.random() * 0.05)
+        print(delta_s_value[i])
         # delta_s_value[i] = delta_m_value[idx_minus_1] + c * (omega_m_value[idx_minus_1]-omega_s_value[i])/b
         
         # vs の計算
@@ -117,6 +142,7 @@ ax8.plot(t, omega_s_value, color=c5, label=l5, marker='.')
 for ax in [ax1, ax2, ax3, ax4, ax5, ax6, ax7, ax8]:
     ax.legend(loc='upper right')
     ax.set_ylim(-3, 3)
+    setGridPrefered(ax)
 
 # レイアウト設定とプロット表示
 fig.tight_layout()
