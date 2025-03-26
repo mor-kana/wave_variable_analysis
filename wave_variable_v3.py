@@ -86,17 +86,15 @@ for i in range(num_point):
         
         # vm の計算（時間シフト）
         # if current_time >= 1:
+        vm_value[i] = vs_value[idx_minus_1]
+        omega_m_value[i] = b * delta_m_value[i-1] - np.sqrt(2*b) * vm_value[i]
 
         if(delta_m_value[idx_minus_2] == 1):
             delta_m_value[i] = 0
         else:
             delta_m_value[i] = 1
             
-        
-        vm_value[i] = vs_value[idx_minus_1]
-        
         # print(delta_m_value[i], vm_value[i])
-        omega_m_value[i] = b * delta_m_value[i] - np.sqrt(2*b) * vm_value[i]
         # um の計算
         um_value[i] = (b * delta_m_value[i] + omega_m_value[i]) / np.sqrt(2 * b)
         
@@ -107,7 +105,7 @@ for i in range(num_point):
         # delta_s の計算
         rng = np.random.default_rng()
         delta_s_value[i] = np.sqrt(2/b) * us_value[i] - omega_s_value[i-1]/b
-        omega_s_value[i] = delta_s_value[i] * (1 + rng.random() * 0.01)
+        omega_s_value[i] = delta_s_value[i] #* (1 + rng.random() * 0.05)
         print(delta_s_value[i])
         # delta_s_value[i] = delta_m_value[idx_minus_1] + c * (omega_m_value[idx_minus_1]-omega_s_value[i])/b
         
