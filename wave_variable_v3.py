@@ -22,7 +22,8 @@ us_value = np.zeros_like(t, dtype=float)
 vm_value = np.zeros_like(t, dtype=float)
 vs_value = np.zeros_like(t, dtype=float)
 
-#vs_value = np.full_like(t,np.sqrt(1/2))
+# vs_value = np.full_like(t,np.sqrt(1/2))
+# vs_value[0] = np.sqrt(1/2)
 # 基本関数の定義
 def delta_m(t_value):
     return 0 if t_value < 0 else operator_input
@@ -87,8 +88,9 @@ for i in range(num_point):
         # vm の計算（時間シフト）
         # if current_time >= 1:
         vm_value[i] = vs_value[idx_minus_1]
-        omega_m_value[i] = b * delta_m_value[i-1] - np.sqrt(2*b) * vm_value[i]
 
+        omega_m_value[i] = b * delta_m_value[i-1] - np.sqrt(2*b) * vm_value[i]
+        
         if(delta_m_value[idx_minus_2] == 1):
             delta_m_value[i] = 0
         else:
@@ -105,8 +107,9 @@ for i in range(num_point):
         # delta_s の計算
         rng = np.random.default_rng()
         delta_s_value[i] = np.sqrt(2/b) * us_value[i] - omega_s_value[i-1]/b
-        omega_s_value[i] = delta_s_value[i] #* (1 + rng.random() * 0.05)
-        print(delta_s_value[i])
+        omega_s_value[i] = delta_s_value[i] * (1 - rng.random() * 0.05)
+        # print(rng.random())
+        # print(delta_s_value[i])
         # delta_s_value[i] = delta_m_value[idx_minus_1] + c * (omega_m_value[idx_minus_1]-omega_s_value[i])/b
         
         # vs の計算
