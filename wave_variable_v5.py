@@ -14,7 +14,7 @@ t = np.linspace(-2 * cycle, point_maxtime, num_point)  # より多くの点で�
 
 operator_input = np.array([[1],[1]]) 
 robot_output = np.array([[1],[1]])
-b = 1.2
+b = 0.01
 c = 1
 # 時間配列の生成
 print(t)
@@ -30,7 +30,7 @@ vs_value = np.zeros((num_point,2,1), dtype=float)
 #vs_value = np.full_like(num_point,np.sqrt(1/2))
 
 # 基本関数の定義
-def r_m(t_value):
+def alpha_m(t_value):
     if t_value < 0:
         return np.zeros((2, 1))  # 2x1のゼロ行列
     else:
@@ -64,7 +64,7 @@ for i in range(num_point):
         idx_minus_1 = get_index_from_time(t, t_minus_1)
 
         #print(beta_m_value[i])
-        beta_m_value[i] = b * alpha_m_value[i-1] - np.sqrt(2*b) * vm_value[i]
+        beta_m_value[i] = b * alpha_m_value[i-1] - np.sqrt(2*b) * vm_value[i-1]
 
         if np.any(alpha_m_value[idx_minus_2] == 1):
             alpha_m_value[i] = np.zeros((2, 1))
@@ -77,17 +77,18 @@ for i in range(num_point):
         # print(alpha_m_value[i], vm_value[i])
         # um の計算
         um_value[i] = (b * alpha_m_value[i] + beta_m_value[i]) / np.sqrt(2 * b)
-        
         # us の計算（時間シフト）
         # if current_time >= 1:
         us_value[i] = um_value[idx_minus_1]
         
-        # r_s の計算
+        # alpha_s の計算
+        # print( np.sqrt(2/b) * us_value[i], ",", beta_s_value[i-1]/b)
         rng = np.random.default_rng()
         alpha_s_value[i] = np.sqrt(2/b) * us_value[i] - beta_s_value[i-1]/b
-        beta_s_value[i] = alpha_s_value[i] #* (1 + rng.random() * 0.01)
-        print("alpha_s_value")
-        print(alpha_s_value[i])
+        print(beta_s_value[i])
+        beta_s_value[i] = b * alpha_s_value[i] #* (1 + rng.random() * 0.01)
+        # print("alpha_s_value")
+        # print(alpha_s_value[i])
         # alpha_s_value[i] = alpha_m_value[idx_minus_1] + c * (beta_m_value[idx_minus_1]-beta_s_value[i])/b
         
         # vs の計算
@@ -95,8 +96,8 @@ for i in range(num_point):
         
 
 #########################################################################< グラフ設定 >#####################################################################################
-r_m_v = np.zeros(num_point, dtype=float)
-r_s_v = np.zeros(num_point, dtype=float)
+alpha_m_v = np.zeros(num_point, dtype=float)
+alpha_s_v = np.zeros(num_point, dtype=float)
 beta_m_p = np.zeros(num_point, dtype=float)
 beta_s_p = np.zeros(num_point, dtype=float)
 um_v = np.zeros(num_point, dtype=float)
@@ -104,8 +105,8 @@ us_v = np.zeros(num_point, dtype=float)
 vm_p = np.zeros(num_point, dtype=float)
 vs_p = np.zeros(num_point, dtype=float)
 
-r_m_omega = np.zeros(num_point, dtype=float)
-r_s_omega = np.zeros(num_point, dtype=float)
+alpha_m_omega = np.zeros(num_point, dtype=float)
+alpha_s_omega = np.zeros(num_point, dtype=float)
 beta_m_theta = np.zeros(num_point, dtype=float)
 beta_s_theta = np.zeros(num_point, dtype=float)
 um_omega = np.zeros(num_point, dtype=float)
@@ -113,8 +114,8 @@ us_omega = np.zeros(num_point, dtype=float)
 vm_theta = np.zeros(num_point, dtype=float)
 vs_theta = np.zeros(num_point, dtype=float)
 
-r_m_v = np.array([x[0, 0] for x in alpha_m_value])
-r_s_v = np.array([x[0, 0] for x in alpha_s_value])
+alpha_m_v = np.array([x[0, 0] for x in alpha_m_value])
+alpha_s_v = np.array([x[0, 0] for x in alpha_s_value])
 beta_m_p = np.array([x[0, 0] for x in beta_m_value])
 beta_s_p = np.array([x[0, 0] for x in beta_s_value])
 um_v = np.array([x[0, 0] for x in um_value])
@@ -122,8 +123,8 @@ us_v = np.array([x[0, 0] for x in us_value])
 vm_p = np.array([x[0, 0] for x in vm_value])
 vs_p = np.array([x[0, 0] for x in vs_value])
 
-r_m_omega = np.array([x[1, 0] for x in alpha_m_value])
-r_s_omega = np.array([x[1, 0] for x in alpha_s_value])
+alpha_m_omega = np.array([x[1, 0] for x in alpha_m_value])
+alpha_s_omega = np.array([x[1, 0] for x in alpha_s_value])
 beta_m_theta = np.array([x[1, 0] for x in beta_m_value])
 beta_s_theta = np.array([x[1, 0] for x in beta_s_value])
 um_omega = np.array([x[1, 0] for x in um_value])
@@ -179,30 +180,31 @@ l9, l10, l11, l12 = r"$\alpha_{m\omega}$ [rad/s]", r"$u_{m\omega}$ [rad/s]", r"$
 l13, l14, l15, l16 = r"$\beta_{s\theta}$ [rad]", r"$v_{s\theta}$ [rad]", r"$v_{m\theta}$ [rad]", r"$\beta_{m\theta}$ [rad]"
 
 # 関数のプロット
-ax1.plot(t, r_m_v, color=c1, label=l1, marker='.')
-ax2.plot(t, beta_m_p, color=c8, label=l8, marker='.')
-ax5.plot(t, um_v, color=c2, label=l2, marker='.')
-ax6.plot(t, vm_p, color=c7, label=l7, marker='.')
-ax9.plot(t, us_v, color=c3, label=l3, marker='.')
-ax10.plot(t, vs_p, color=c6, label=l6, marker='.')
-ax13.plot(t, r_s_v, color=c4, label=l4, marker='.')
-ax14.plot(t, beta_s_p, color=c5, label=l5, marker='.')
+ax1.plot(t, beta_m_theta, color=c8, label=l16, marker='.')
+ax2.plot(t, vm_theta, color=c7, label=l15, marker='.')
+ax3.plot(t, vs_theta, color=c6, label=l14, marker='.')
+ax4.plot(t, beta_s_theta, color=c5, label=l13, marker='.')
+ax5.plot(t, alpha_m_omega, color=c1, label=l9, marker='.')
+ax6.plot(t, um_omega, color=c2, label=l10, marker='.')
+ax7.plot(t, us_omega, color=c3, label=l11, marker='.')
+ax8.plot(t, alpha_s_omega, color=c4, label=l12, marker='.')
 
-ax3.plot(t, r_m_omega, color=c1, label=l9, marker='.')
-ax4.plot(t, beta_m_theta, color=c8, label=l16, marker='.')
-ax7.plot(t, um_omega, color=c2, label=l10, marker='.')
-ax8.plot(t, vm_theta, color=c7, label=l15, marker='.')
-ax11.plot(t, us_omega, color=c3, label=l11, marker='.')
-ax12.plot(t, vs_theta, color=c6, label=l14, marker='.')
-ax15.plot(t, r_s_omega, color=c4, label=l12, marker='.')
-ax16.plot(t, beta_s_theta, color=c5, label=l13, marker='.')
+ax9.plot(t, beta_m_p, color=c8, label=l8, marker='.')
+ax10.plot(t, vm_p, color=c7, label=l7, marker='.')
+ax11.plot(t, vs_p, color=c6, label=l6, marker='.')
+ax12.plot(t, beta_s_p, color=c5, label=l5, marker='.')
+ax13.plot(t, alpha_m_v, color=c1, label=l1, marker='.')
+ax14.plot(t, um_v, color=c2, label=l2, marker='.')
+ax15.plot(t, us_v, color=c3, label=l3, marker='.')
+ax16.plot(t, alpha_s_v, color=c4, label=l4, marker='.')
+
 
 ax_list = [ax1, ax2, ax3, ax4, ax5, ax6, ax7, ax8, ax9, ax10, ax11, ax12, ax13, ax14, ax15, ax16]
-label_list = [l1, l2, l3, l4, l5, l6, l7, l8, l9, l10, l11, l12, l13, l14, l15, l16]
+label_list = [l16, l15, l14, l13, l9, l10, l11, l12, l8, l7, l6, l5, l1, l2, l3, l4]
 # 凡例,値の表示範囲の追加
 for i, ax in enumerate(ax_list):
    # ax.legend(loc='upper right')
-    ax.set_ylim(-3, 3)
+    ax.set_ylim(-2, 2)
     ax.set_ylabel(label_list[i])
     ax.set_xlabel('Time [s]')
     setGridPrefered(ax)
@@ -226,8 +228,8 @@ bbox2 = ax3.get_position()  # 右側の最も左にあるサブプロット
 center_x = (bbox1.x1 + bbox2.x0) / 2
 
 # 縦線を引く（上から下まで）
-line = plt.Line2D([center_x, center_x], [0, 1], transform=fig.transFigure, color='black', linewidth=2)
-fig.add_artist(line)
+# line = plt.Line2D([center_x, center_x], [0, 1], transform=fig.transFigure, color='black', linewidth=2)
+# fig.add_artist(line)
 
 # # グラフ上部に「左側グラフ」と「右側グラフ」のラベルを追加
 # fig.text(bbox1.x0 + (bbox1.x1 - bbox1.x0) / 2, 0.98, '左側グラフ群', ha='center', va='top', fontsize=12)
